@@ -1,0 +1,189 @@
+[
+  {
+    "company_name": "Glamour Studio Salons",
+    "category": "Salon",
+    "website_domain": "glamourstudiosalon.in",
+    "website_url": "https://www.glamourstudiosalon.in",
+    "description": "Premium hair, styling and skin aesthetics studio for men and women.",
+    "branch_name": "Glamour Studio Salon & Spa - Phase 7",
+    "address_line": "SCO 42, First Floor, Phase 7 Market",
+    "locality": "Phase 7",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160062",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 98765 43210" },
+      { "type": "whatsapp", "value": "+91 98765 43210" },
+      { "type": "landline", "value": "0172-2214567" },
+      { "type": "email", "value": "phase7@glamourstudiosalon.in" }
+    ],
+    "socials": [
+      { "platform": "instagram", "url": "https://instagram.com/glamourstudiomohali", "handle": "@glamourstudiomohali" },
+      { "platform": "facebook", "url": "https://facebook.com/glamourstudiopunjab" }
+    ]
+  },
+  {
+    "company_name": "Glamour Studio Salons",
+    "category": "Salon",
+    "website_domain": "glamourstudiosalon.in",
+    "website_url": "https://www.glamourstudiosalon.in/phase3b2",
+    "description": "Phase 3B2 branch of Glamour Studio offering luxury bridal and grooming services.",
+    "branch_name": "Glamour Studio Salon - Phase 3B2",
+    "address_line": "Booth 18, Main Boulevard, Phase 3B2",
+    "locality": "Phase 3B2",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160059",
+    "is_headquarters": false,
+    "contacts": [
+      { "type": "mobile", "value": "+91 98140 12345" },
+      { "type": "whatsapp", "value": "+91 98140 12345" },
+      { "type": "email", "value": "phase3b2@glamourstudiosalon.in" }
+    ],
+    "socials": [
+      { "platform": "instagram", "url": "https://instagram.com/glamourstudiomohali", "handle": "@glamourstudiomohali" }
+    ]
+  },
+  {
+    "company_name": "The Royal Crown Salon",
+    "category": "Salon",
+    "website_domain": "royalcrownmohali.com",
+    "website_url": "https://www.royalcrownmohali.com",
+    "description": "Executive styling and spa therapies in Sector 70 Mohali.",
+    "branch_name": "The Royal Crown Salon - Sector 70",
+    "address_line": "SCF 15, Near Matour Park, Sector 70",
+    "locality": "Sector 70",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160071",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "9888123456" },
+      { "type": "whatsapp", "value": "9888123456" },
+      { "type": "landline", "value": "0172-5098765" },
+      { "type": "email", "value": "contact@royalcrownmohali.com" }
+    ],
+    "socials": [
+      { "platform": "facebook", "url": "https://facebook.com/royalcrownsalonmohali" },
+      { "platform": "instagram", "url": "https://instagram.com/royalcrown_mohali" }
+    ]
+  },
+  {
+    "company_name": "Bliss Hair & Beauty Lounge",
+    "category": "Salon",
+    "website_domain": "blissloungeindia.com",
+    "website_url": "https://www.blissloungeindia.com",
+    "description": "Organic hair spa, nail art and professional makeup artistry.",
+    "branch_name": "Bliss Hair & Beauty Lounge - Phase 5",
+    "address_line": "SCO 8, Market Square, Phase 5",
+    "locality": "Phase 5",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160059",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 97799 54321" },
+      { "type": "whatsapp", "value": "+91 97799 54321" },
+      { "type": "email", "value": "info@blissloungeindia.com" }
+    ],
+    "socials": [
+      { "platform": "instagram", "url": "https://instagram.com/blisslounge_mohali" }
+    ]
+  },
+  {
+    "company_name": "Urban Scissors Barbershop",
+    "category": "Salon",
+    "website_domain": "urbanscissors.co.in",
+    "website_url": "https://urbanscissors.co.in",
+    "description": "Modern men's grooming and beard care studio.",
+    "branch_name": "Urban Scissors - Phase 7",
+    "address_line": "Shop 12, Ground Floor, Phase 7 Market",
+    "locality": "Phase 7",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160062",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 99150 88776" },
+      { "type": "whatsapp", "value": "+91 99150 88776" }
+    ],
+    "socials": []
+  },
+  {
+    "company_name": "Toni & Guy Essensuals",
+    "category": "Salon",
+    "website_domain": "toniandguychd.com",
+    "website_url": "https://toniandguychd.com",
+    "description": "International hair styling, creative colouring and hair treatments.",
+    "branch_name": "Toni & Guy Essensuals - Sector 35",
+    "address_line": "SCO 441-442, Sector 35-C",
+    "locality": "Sector 35",
+    "city": "Chandigarh",
+    "district": "Chandigarh",
+    "state": "Chandigarh",
+    "pincode": "160035",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 98722 33445" },
+      { "type": "landline", "value": "0172-4601122" },
+      { "type": "email", "value": "appointments@toniandguychd.com" }
+    ],
+    "socials": [
+      { "platform": "instagram", "url": "https://instagram.com/toniandguychandigarh" }
+    ]
+  },
+  {
+    "company_name": "Zenith Digital Media",
+    "category": "Digital Marketing Agency",
+    "website_domain": "zenithdigitalindia.com",
+    "website_url": "https://zenithdigitalindia.com",
+    "description": "Performance marketing, SEO, paid ads and conversion rate optimization.",
+    "branch_name": "Zenith Digital Media - JLPL Industrial Area",
+    "address_line": "Plot F-245, Sector 82 JLPL",
+    "locality": "Sector 82 JLPL",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "140306",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 98889 11223" },
+      { "type": "whatsapp", "value": "+91 98889 11223" },
+      { "type": "email", "value": "growth@zenithdigitalindia.com" }
+    ],
+    "socials": [
+      { "platform": "linkedin", "url": "https://linkedin.com/company/zenithdigitalindia" }
+    ]
+  },
+  {
+    "company_name": "Spice Route Gourmet",
+    "category": "Restaurant",
+    "website_domain": "spiceroutepunjab.com",
+    "website_url": "https://spiceroutepunjab.com",
+    "description": "Authentic North Indian delicacies, tandoori grills and catering.",
+    "branch_name": "Spice Route Gourmet - Phase 3B2",
+    "address_line": "SCO 22, Inner Circle, Phase 3B2",
+    "locality": "Phase 3B2",
+    "city": "Mohali",
+    "district": "SAS Nagar",
+    "state": "Punjab",
+    "pincode": "160059",
+    "is_headquarters": true,
+    "contacts": [
+      { "type": "mobile", "value": "+91 98155 77665" },
+      { "type": "landline", "value": "0172-2278901" },
+      { "type": "whatsapp", "value": "+91 98155 77665" },
+      { "type": "email", "value": "reservations@spiceroutepunjab.com" }
+    ],
+    "socials": [
+      { "platform": "instagram", "url": "https://instagram.com/spiceroute_mohali" }
+    ]
+  }
+]
+
