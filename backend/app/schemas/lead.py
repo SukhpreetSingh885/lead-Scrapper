@@ -11,6 +11,8 @@ class BusinessContactOut(BaseModel):
     is_primary: bool
     is_verified: bool
     source: str
+    source_url: Optional[str] = None
+    evidence: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -63,6 +65,8 @@ class LeadBranchDetail(BaseModel):
     enrichment_status: str
     last_checked_at: Optional[datetime] = None
     is_demo: bool
+    is_archived: bool = False
+    archive_reason: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -88,6 +92,8 @@ class LeadListItem(BaseModel):
     enrichment_status: str
     source_name: Optional[str] = None
     is_demo: bool
+    is_archived: bool = False
+    archive_reason: Optional[str] = None
     social_profiles_count: int = 0
     created_at: datetime
     updated_at: datetime
@@ -109,6 +115,8 @@ class LeadFilterParams(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     category: Optional[str] = None
+    job_id: Optional[str] = None
+    has_contact_number: Optional[bool] = None
     has_phone: Optional[bool] = None
     has_mobile: Optional[bool] = None
     has_email: Optional[bool] = None
@@ -116,7 +124,38 @@ class LeadFilterParams(BaseModel):
     has_whatsapp: Optional[bool] = None
     enrichment_status: Optional[str] = None
     is_demo: Optional[bool] = None
+    is_archived: Optional[bool] = False
     query: Optional[str] = None
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=25, ge=1, le=100)
+
+
+class SaveSelectedLeadsRequest(BaseModel):
+    job_id: str
+    item_ids: Optional[List[str]] = None
+    save_all_eligible: bool = False
+
+
+class SaveSelectedLeadsResponse(BaseModel):
+    success: bool
+    total_requested: int
+    saved_count: int
+    already_existing_count: int
+    skipped_count: int
+    failed_count: int
+    saved_lead_ids: List[str] = []
+    message: str
+
+
+class BulkDeleteLeadsRequest(BaseModel):
+    lead_ids: Optional[List[str]] = None
+    delete_all_filtered: bool = False
+    filters: Optional[LeadFilterParams] = None
+
+
+class DeleteLeadsResponse(BaseModel):
+    success: bool
+    deleted_count: int
+    message: str
+
 

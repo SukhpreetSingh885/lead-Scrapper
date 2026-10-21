@@ -29,6 +29,8 @@ class Branch(Base, TimestampMixin):
     enrichment_status = Column(String(50), default="pending", nullable=False)  # pending, running, completed, failed, not_applicable
     last_checked_at = Column(DateTime(timezone=True), nullable=True)
     is_demo = Column(Boolean, default=False, nullable=False, index=True)
+    is_archived = Column(Boolean, default=False, nullable=False, index=True)
+    archive_reason = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False, index=True)
 
     company = relationship("Company", back_populates="branches")

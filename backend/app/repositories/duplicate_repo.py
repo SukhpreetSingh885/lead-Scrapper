@@ -14,6 +14,7 @@ class DuplicateRepository:
 
     def get_pending_duplicates_paginated(
         self,
+        org_id: Optional[str] = None,
         page: int = 1,
         page_size: int = 20
     ) -> Tuple[List[DuplicateCandidateOut], int]:
@@ -21,6 +22,9 @@ class DuplicateRepository:
             joinedload(DuplicateCandidate.existing_branch).joinedload(Branch.company),
             joinedload(DuplicateCandidate.candidate_branch).joinedload(Branch.company),
         ).filter(DuplicateCandidate.status == "pending_review")
+
+        if org_id:
+            query = query.join(Branch, DuplicateCandidate.existing_branch_id == Branch.id).join(Company, Branch.company_id == Company.id).filter(Company.organization_id == org_id)
 
         total = query.count()
         offset = (page - 1) * page_size

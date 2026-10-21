@@ -21,7 +21,11 @@ def list_duplicate_candidates(
     db: Session = Depends(get_db)
 ):
     repo = DuplicateRepository(db)
-    items, total = repo.get_pending_duplicates_paginated(page=page, page_size=page_size)
+    items, total = repo.get_pending_duplicates_paginated(
+        org_id=current_user.organization_id,
+        page=page,
+        page_size=page_size
+    )
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
 
     return PaginatedResponse(
@@ -51,7 +55,8 @@ def resolve_duplicate_candidate(
         candidate_id=candidate_id,
         resolution=resolve_in.resolution,
         user_id=current_user.id,
-        notes=resolve_in.notes
+        notes=resolve_in.notes,
+        org_id=current_user.organization_id
     )
 
     if not success:

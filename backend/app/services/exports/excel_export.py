@@ -55,6 +55,26 @@ class ExcelExportService:
         # Freeze header row
         ws.freeze_panes = "A2"
 
+        # Dedicated License & Attribution sheet for ODbL 1.0 compliance
+        ws_lic = wb.create_sheet(title="License & Attribution")
+        ws_lic.append(["Attribute", "Details"])
+        ws_lic.append(["Data Provider", "OpenStreetMap Contributors"])
+        ws_lic.append(["License", "Open Database License (ODbL) 1.0"])
+        ws_lic.append(["License URL", "https://opendatacommons.org/licenses/odbl/1.0/"])
+        ws_lic.append(["Copyright Notice", "(C) OpenStreetMap contributors (https://www.openstreetmap.org/copyright)"])
+        ws_lic.append(["Platform Generator", "India Leads Platform - Permitted Business Lead Engine"])
+        ws_lic.append(["Permitted Usage", "Commercial & non-commercial B2B lead discovery, CRM contact management, address verification."])
+        ws_lic.append(["Derivative Requirement", "Any public redistribution or derivative database must attribute OpenStreetMap contributors."])
+
+        for col_idx in range(1, 3):
+            cell = ws_lic.cell(row=1, column=col_idx)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+
+        ws_lic.column_dimensions["A"].width = 25
+        ws_lic.column_dimensions["B"].width = 85
+
         buffer = io.BytesIO()
         wb.save(buffer)
         buffer.seek(0)

@@ -7,7 +7,8 @@ def test_api_health(client):
     data = response.json()
     assert data["status"] == "healthy"
     assert data["service"] == "India Leads Platform"
-    assert data["free_testing_mode"]["enabled"] is True
+    assert "enabled" in data["free_testing_mode"]
+    assert "overpass" in data["live_providers"]
 
 
 def test_api_locations_suggest(client):
@@ -19,12 +20,12 @@ def test_api_locations_suggest(client):
 
 
 def test_api_discovery_job_creation_and_execution(client):
-    # Valid Indian location
+    # Valid Indian location with Overpass provider
     payload = {
         "location": "Mohali",
         "category": "Salon",
         "max_leads": 10,
-        "source": "demo_fixture"
+        "source": "overpass"
     }
     response = client.post("/api/v1/discovery/jobs", json=payload)
     assert response.status_code == 201
@@ -32,12 +33,37 @@ def test_api_discovery_job_creation_and_execution(client):
     assert job["resolved_city"] == "Mohali"
     assert job["category"] == "Salon"
     assert job["status"] in ("completed", "running", "pending")
-    assert job["total_discovered"] >= 1
+    
+    # In async/BackgroundTasks mode, fetch the finalized job status
+    job_get = client.get(f"/api/v1/discovery/jobs/{job['id']}")
+    assert job_get.status_code == 200
+    final_job = job_get.json()
+    assert final_job["total_discovered"] >= 1
 
-    # Verify leads were inserted in DB
-    leads_res = client.get("/api/v1/leads?city=Mohali")
-    assert leads_res.status_code == 200
-    leads_data = leads_res.json()
+    # Verify preview results exist in preview storage without auto-CRM saving
+    preview_res = client.get(f"/api/v1/discovery/jobs/{job['id']}/preview")
+    assert preview_res.status_code == 200
+    preview_data = preview_res.json()
+    assert len(preview_data["items"]) >= 1
+
+    # Verify CRM has 0 leads before explicit user save (Preview Isolation)
+    leads_res_before = client.get("/api/v1/leads?city=Mohali")
+    assert leads_res_before.status_code == 200
+    assert leads_res_before.json()["total"] == 0
+
+    # User explicitly saves selected / eligible preview leads
+    save_res = client.post("/api/v1/leads/save-selected", json={
+        "job_id": job["id"],
+        "save_all_eligible": True
+    })
+    assert save_res.status_code == 200
+    save_data = save_res.json()
+    assert save_data["saved_count"] >= 1
+
+    # Verify leads are now saved in CRM database
+    leads_res_after = client.get("/api/v1/leads?city=Mohali")
+    assert leads_res_after.status_code == 200
+    leads_data = leads_res_after.json()
     assert leads_data["total"] >= 1
 
 

@@ -7,21 +7,13 @@ import {
   ArrowLeft,
   Building2,
   MapPin,
-  Phone,
-  Mail,
   Globe,
-  MessageSquare,
-  ShieldCheck,
   RotateCw,
   ExternalLink,
-  Calendar,
-  CheckCircle2,
-  Sparkles,
 } from "lucide-react";
-import { Header } from "@/components/layout/header";
 import { Badge } from "@/components/ui/badge";
 import { useLeadDetail, useEnrichLead } from "@/hooks/use-leads";
-import { formatPhoneNumber, formatDate } from "@/lib/utils";
+import { formatPhoneNumber } from "@/lib/utils";
 
 export default function LeadDetailPage() {
   const params = useParams();
@@ -46,7 +38,7 @@ export default function LeadDetailPage() {
         <div className="text-base font-bold text-slate-800">Lead branch not found</div>
         <Link
           href="/leads"
-          className="inline-flex items-center space-x-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold"
+          className="inline-flex items-center space-x-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-xs font-semibold touch-manipulation"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to All Leads</span>
@@ -56,30 +48,30 @@ export default function LeadDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-5 sm:space-y-6 max-w-5xl mx-auto w-full min-w-0">
       {/* Back button */}
       <div>
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center space-x-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors p-1.5 -ml-1 rounded-lg hover:bg-slate-100 touch-manipulation"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-4 h-4" />
           <span>Back to Leads</span>
         </button>
       </div>
 
       {/* Main Business Profile Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-6 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-5">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-bold text-slate-900">{lead.business_name}</h1>
+          <div className="space-y-1 min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 break-words">{lead.business_name}</h1>
               {lead.is_demo && <Badge variant="demo">DEMO DATA</Badge>}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
               <span className="font-medium text-slate-700">{lead.category}</span>
               <span>•</span>
-              <span>Company: {lead.legal_name}</span>
+              <span className="break-words">Company: {lead.legal_name}</span>
             </div>
           </div>
 
@@ -88,7 +80,7 @@ export default function LeadDetailPage() {
             <button
               onClick={() => enrich(lead.id)}
               disabled={isEnriching || !lead.website_url}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-sm flex items-center space-x-1.5 disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-sm flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-colors min-h-[40px] touch-manipulation"
             >
               <RotateCw className={`w-3.5 h-3.5 ${isEnriching ? "animate-spin" : ""}`} />
               <span>{isEnriching ? "Enriching Website..." : "Enrich Contacts"}</span>
@@ -97,19 +89,19 @@ export default function LeadDetailPage() {
         </div>
 
         {/* Location & Address */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-          <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs">
+          <div className="space-y-3 min-w-0">
             <div className="text-[11px] font-bold uppercase text-slate-400 tracking-wider">
               Physical Location (Republic of India)
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-              <div className="flex items-start space-x-2">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div className="flex items-start space-x-2.5">
                 <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-0.5">
-                  <div className="font-medium text-slate-900">
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  <div className="font-medium text-slate-900 break-words">
                     {lead.address_line || "Street address not available"}
                   </div>
-                  {lead.locality && <div className="text-slate-600">Locality: {lead.locality}</div>}
+                  {lead.locality && <div className="text-slate-600 break-words">Locality: {lead.locality}</div>}
                   <div className="text-slate-700 font-semibold">
                     {lead.city}, {lead.state} {lead.pincode && `- ${lead.pincode}`}
                   </div>
@@ -122,29 +114,29 @@ export default function LeadDetailPage() {
           </div>
 
           {/* Website & Domain */}
-          <div className="space-y-3">
+          <div className="space-y-3 min-w-0">
             <div className="text-[11px] font-bold uppercase text-slate-400 tracking-wider">
               Web Presence
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-              <div className="flex items-start space-x-2">
+            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div className="flex items-start space-x-2.5">
                 <Globe className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0 flex-1">
                   {lead.website_url ? (
                     <a
                       href={lead.website_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-blue-600 hover:underline font-medium inline-flex items-center space-x-1"
+                      className="text-blue-600 hover:underline font-medium inline-flex items-center space-x-1 break-all"
                     >
-                      <span>{lead.website_url}</span>
-                      <ExternalLink className="w-3 h-3 ml-1" />
+                      <span className="break-all">{lead.website_url}</span>
+                      <ExternalLink className="w-3 h-3 ml-1 shrink-0" />
                     </a>
                   ) : (
                     <span className="text-slate-400 italic">No website available</span>
                   )}
                   {lead.website_domain && (
-                    <div className="text-slate-500 text-[11px]">Domain: {lead.website_domain}</div>
+                    <div className="text-slate-500 text-[11px] truncate">Domain: {lead.website_domain}</div>
                   )}
                 </div>
               </div>
@@ -163,7 +155,7 @@ export default function LeadDetailPage() {
               {lead.contacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1"
+                  className="p-3.5 rounded-xl border border-slate-200 bg-white shadow-2xs space-y-1 min-w-0"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
@@ -176,13 +168,13 @@ export default function LeadDetailPage() {
                     )}
                   </div>
 
-                  <div className="font-semibold text-slate-900 text-xs font-mono">
+                  <div className="font-semibold text-slate-900 text-xs font-mono break-all">
                     {contact.contact_type === "mobile" || contact.contact_type === "landline" || contact.contact_type === "whatsapp"
                       ? formatPhoneNumber(contact.normalized_value)
                       : contact.normalized_value}
                   </div>
 
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-[10px] text-slate-400 truncate">
                     Source: {contact.source}
                   </div>
                 </div>
@@ -190,7 +182,7 @@ export default function LeadDetailPage() {
             </div>
           ) : (
             <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center text-xs text-slate-400">
-              No contacts discovered yet. Click "Enrich Contacts" to crawl the business website.
+              No contacts discovered yet. Click &quot;Enrich Contacts&quot; to crawl the business website.
             </div>
           )}
         </div>
@@ -208,11 +200,11 @@ export default function LeadDetailPage() {
                   href={soc.profile_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 bg-white text-xs font-medium text-slate-700 hover:text-blue-600 transition-colors flex items-center space-x-1.5 shadow-2xs"
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 bg-white text-xs font-medium text-slate-700 hover:text-blue-600 transition-colors flex items-center space-x-1.5 shadow-2xs touch-manipulation"
                 >
                   <span className="capitalize font-semibold">{soc.platform}</span>
                   {soc.handle && <span className="text-slate-400 text-[11px]">({soc.handle})</span>}
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
+                  <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
                 </a>
               ))}
             </div>
@@ -222,16 +214,16 @@ export default function LeadDetailPage() {
         {/* Provenance & License Metadata */}
         <div className="border-t border-slate-100 pt-5 text-xs text-slate-500 space-y-2">
           <div className="text-[11px] font-bold uppercase text-slate-400 tracking-wider">
-            Provenance & License Metadata
+            Provenance &amp; License Metadata
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-slate-50 p-3.5 sm:p-4 rounded-xl min-w-0">
             <div>
               <span className="text-[10px] text-slate-400 block font-semibold uppercase">Source</span>
-              <span className="text-slate-800 font-medium">{lead.source_name || "Independently Verified"}</span>
+              <span className="text-slate-800 font-medium truncate block">{lead.source_name || "Independently Verified"}</span>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block font-semibold uppercase">Permission Status</span>
-              <span className="text-slate-800 font-medium">{lead.source_permission_status}</span>
+              <span className="text-slate-800 font-medium truncate block">{lead.source_permission_status}</span>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block font-semibold uppercase">Confidence Score</span>
@@ -239,7 +231,7 @@ export default function LeadDetailPage() {
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block font-semibold uppercase">Enrichment Status</span>
-              <span className="text-slate-800 font-medium capitalize">{lead.enrichment_status}</span>
+              <span className="text-slate-800 font-medium capitalize truncate block">{lead.enrichment_status}</span>
             </div>
           </div>
         </div>
@@ -247,4 +239,3 @@ export default function LeadDetailPage() {
     </div>
   );
 }
-

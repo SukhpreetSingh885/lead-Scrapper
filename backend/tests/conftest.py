@@ -18,7 +18,7 @@ from app.models import (
     Branch,
     BusinessContact,
 )
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, create_access_token
 
 # Setup test in-memory SQLite database with StaticPool
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -48,7 +48,8 @@ def db_session():
         email="test@indialeads.internal",
         hashed_password=get_password_hash("password123"),
         full_name="Test User",
-        is_active=True
+        is_active=True,
+        is_superuser=True
     )
     db.add(user)
 
@@ -88,6 +89,24 @@ def db_session():
     )
     db.add(perm_lic)
 
+    overpass_source = LeadSource(
+        id="source-overpass",
+        name="OpenStreetMap Overpass API",
+        code="overpass",
+        is_active=True
+    )
+    db.add(overpass_source)
+    db.flush()
+
+    perm_overpass = SourcePermission(
+        source_id=overpass_source.id,
+        license_name="Open Database License (ODbL) 1.0",
+        permitted_storage=True,
+        permitted_export=True,
+        permitted_enrichment=True
+    )
+    db.add(perm_overpass)
+
     # Seed India locations for validation
     locs = [
         IndiaLocation(city="Mohali", state="Punjab", district="SAS Nagar", locality="Phase 7", pincode="160062"),
@@ -113,7 +132,7 @@ def db_session():
 
 
 @pytest.fixture(scope="function")
-def client(db_session):
+def unauthenticated_client(db_session):
     def override_get_db():
         try:
             yield db_session
@@ -124,4 +143,28 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def client(db_session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    token = create_access_token(subject="test-user-1")
+    with TestClient(
+        app,
+        cookies={"access_token": token},
+        headers={"Authorization": f"Bearer {token}"}
+    ) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def auth_client(client):
+    return client
 

@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "super_secret_temporary_key_for_development_32chars"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
 
+    # Initial Admin Setup (Read from backend/.env; used ONLY for initial bootstrap if no admin exists or explicit CLI reset)
+    ADMIN_EMAIL: str = "admin@indialeads.internal"
+    ADMIN_INITIAL_PASSWORD: Optional[str] = None
+    ADMIN_FULL_NAME: str = "Principal Lead Admin"
+
     # Database
     DATABASE_URL: str = "sqlite:///./india_leads.db"
 
@@ -28,10 +33,20 @@ class Settings(BaseSettings):
     CELERY_TASK_ALWAYS_EAGER: bool = True  # Default True for seamless local zero-dependency testing
 
     # Sourcing & Modes
-    DEMO_MODE: bool = True
+    DEMO_MODE: bool = False
+    DISCOVERY_PROVIDER: str = "overpass"
+    OVERPASS_API_URL: str = "https://overpass.openstreetmap.fr/api/interpreter"
+    OVERPASS_FALLBACK_URLS: List[str] = [
+        "https://overpass.kumi.systems/api/interpreter",
+        "https://overpass-api.de/api/interpreter"
+    ]
     GOOGLE_MAPS_API_KEY: Optional[str] = None
     GOOGLE_SEARCH_API_KEY: Optional[str] = None
     GOOGLE_SEARCH_CX: Optional[str] = None
+
+    # Server Host & Port
+    HOST: str = "127.0.0.1"
+    PORT: int = 8001
 
     # Crawler & Enrichment Safeguards
     ENRICHMENT_MAX_PAGES_PER_DOMAIN: int = 4
@@ -44,6 +59,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
         "http://localhost:8000",
         "http://127.0.0.1:8000"
     ]

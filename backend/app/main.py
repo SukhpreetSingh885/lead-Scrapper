@@ -24,6 +24,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Database table initialization error: {e}")
 
+    # Bootstrap initial admin ONLY if no admin exists in the database
+    try:
+        from app.services.auth.bootstrap import bootstrap_initial_admin
+        bootstrap_initial_admin()
+    except Exception as e:
+        logger.warning(f"Admin bootstrap check notice: {e}")
+
     yield
 
     logger.info(f"Shutting down {settings.PROJECT_NAME}...")

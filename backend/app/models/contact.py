@@ -14,6 +14,8 @@ class BusinessContact(Base, TimestampMixin):
     is_primary = Column(Boolean, default=False, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     source = Column(String(100), default="website_enrichment", nullable=False)
+    source_url = Column(String(500), nullable=True)
+    evidence = Column(String(500), nullable=True)
 
     branch = relationship("Branch", back_populates="contacts")
 

@@ -55,3 +55,51 @@ def test_reject_invalid_phone_numbers():
         else:
             assert res is None
 
+
+def test_multi_phone_extraction():
+    """Verify comma/semicolon/pipe/and delimited numbers are parsed independently."""
+    sample = "+91 172 5044436; +91 99888 54440"
+    extracted = IndianPhoneExtractor.extract_multiple_phones(sample)
+    assert len(extracted) == 2
+    vals = [e["normalized_value"] for e in extracted]
+    assert "+911725044436" in vals
+    assert "+919988854440" in vals
+    types = {e["normalized_value"]: e["contact_type"] for e in extracted}
+    assert types["+911725044436"] == "landline"
+    assert types["+919988854440"] == "mobile"
+
+
+def test_slashed_numbers_expansion():
+    """Verify Indian slash extension formats are correctly reconstructed."""
+    sample = "0172-5044436/37"
+    extracted = IndianPhoneExtractor.extract_multiple_phones(sample)
+    assert len(extracted) == 2
+    vals = [e["normalized_value"] for e in extracted]
+    assert "+911725044436" in vals
+    assert "+911725044437" in vals
+
+
+def test_osm_contact_tags_extraction():
+    """Verify extraction across multiple OSM contact keys with provenance."""
+    tags = {
+        "phone": "0172-5044436",
+        "contact:mobile": "+91 99888 54440, 9814012345",
+        "contact:whatsapp": "+919988854440",
+    }
+    contacts = IndianPhoneExtractor.extract_all_contacts_from_osm_tags(tags, elem_type="node", elem_id=123456)
+    assert len(contacts) >= 3
+
+    mobiles = [c for c in contacts if c["contact_type"] == "mobile"]
+    landlines = [c for c in contacts if c["contact_type"] == "landline"]
+    whatsapps = [c for c in contacts if c["contact_type"] == "whatsapp"]
+
+    assert len(mobiles) >= 1
+    assert len(landlines) >= 1
+    assert len(whatsapps) >= 1
+
+    for c in contacts:
+        assert c["source"] == "osm"
+        assert "openstreetmap.org" in c["source_url"]
+        assert "OSM tag:" in c["evidence"]
+
+

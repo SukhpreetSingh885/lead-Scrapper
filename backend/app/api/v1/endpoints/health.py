@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.core.config import settings
 from app.services.discovery.google_places import GooglePlacesDiscoveryProvider
 from app.services.discovery.google_search import GoogleSearchDiscoveryProvider
+from app.services.discovery.overpass_provider import OverpassDiscoveryProvider
 from app.services.discovery.demo_provider import DemoDiscoveryProvider
 
 router = APIRouter()
@@ -25,7 +26,7 @@ def health_check(db: Session = Depends(get_db)) -> Dict[str, Any]:
     # Check providers
     places = GooglePlacesDiscoveryProvider()
     search = GoogleSearchDiscoveryProvider()
-    demo = DemoDiscoveryProvider()
+    overpass = OverpassDiscoveryProvider()
 
     return {
         "status": "healthy" if db_ok else "degraded",
@@ -35,11 +36,16 @@ def health_check(db: Session = Depends(get_db)) -> Dict[str, Any]:
             "status": "connected" if db_ok else "disconnected",
             "type": "sqlite" if settings.is_sqlite else "postgresql"
         },
+        "discovery": {
+            "active_provider": getattr(settings, "DISCOVERY_PROVIDER", "overpass"),
+            "demo_mode": getattr(settings, "DEMO_MODE", False),
+        },
         "free_testing_mode": {
-            "enabled": settings.DEMO_MODE,
-            "demo_provider": demo.health_check()
+            "enabled": getattr(settings, "DEMO_MODE", False),
+            "demo_provider": DemoDiscoveryProvider().health_check()
         },
         "live_providers": {
+            "overpass": overpass.health_check(),
             "google_places": places.health_check(),
             "google_search": search.health_check()
         }

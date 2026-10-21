@@ -2,6 +2,7 @@ import csv
 import io
 from typing import List, Dict, Any, Generator
 from app.models import Branch
+from app.services.enrichment.phone_extractor import IndianPhoneExtractor
 
 
 def sanitize_formula_injection(value: Any) -> str:
@@ -40,6 +41,7 @@ class CsvExportService:
         "LinkedIn",
         "Other Social Links",
         "Data Source",
+        "License & Attribution",
         "Permission Status",
         "Enrichment Status",
         "Last Verified"
@@ -53,15 +55,24 @@ class CsvExportService:
         whatsapp = None
         email = None
 
+        city_context = branch.city
+
         for c in branch.contacts:
+            val = c.normalized_value or c.original_value
+            if not val or not str(val).strip():
+                continue
+
             if c.contact_type == "mobile" and not mobile:
-                mobile = c.normalized_value or c.original_value
+                norm = IndianPhoneExtractor.normalize_phone(str(val), default_type="mobile", city_context=city_context)
+                mobile = norm["normalized_value"] if norm else str(val).strip()
             elif c.contact_type in ("landline", "phone") and not landline:
-                landline = c.normalized_value or c.original_value
+                norm = IndianPhoneExtractor.normalize_phone(str(val), default_type="landline", city_context=city_context)
+                landline = norm["normalized_value"] if norm else str(val).strip()
             elif c.contact_type == "whatsapp" and not whatsapp:
-                whatsapp = c.normalized_value or c.original_value
+                norm = IndianPhoneExtractor.normalize_phone(str(val), default_type="whatsapp", city_context=city_context)
+                whatsapp = norm["normalized_value"] if norm else str(val).strip()
             elif c.contact_type == "email" and not email:
-                email = c.normalized_value or c.original_value
+                email = str(val).strip()
 
         fb, insta, linkedin, others = None, None, None, []
         for s in branch.social_profiles:
@@ -74,9 +85,13 @@ class CsvExportService:
             else:
                 others.append(s.profile_url)
 
-        source_name = branch.source.name if branch.source else "Independently Verified"
+        source_name = branch.source.name if branch.source else "OpenStreetMap Contributors"
+        license_str = "ODbL 1.0 (C) OpenStreetMap contributors"
         if branch.is_demo:
             source_name = "[DEMO DATA] Deterministic Offline Fixture"
+            license_str = "Demo Offline Fixture (Synthetic)"
+        elif branch.source and branch.source.code == "licensed_csv":
+            license_str = "Customer Verified Proprietary Dataset"
 
         verified_date = branch.last_checked_at.strftime("%Y-%m-%d %H:%M") if branch.last_checked_at else "Not Available"
 
@@ -100,6 +115,7 @@ class CsvExportService:
             sanitize_formula_injection(linkedin),
             sanitize_formula_injection("; ".join(others) if others else None),
             sanitize_formula_injection(source_name),
+            sanitize_formula_injection(license_str),
             sanitize_formula_injection(branch.source_permission_status),
             sanitize_formula_injection(branch.enrichment_status),
             sanitize_formula_injection(verified_date),

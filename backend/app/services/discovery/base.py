@@ -14,13 +14,20 @@ class DiscoveredLeadItem(BaseModel):
     pincode: Optional[str] = None
     country: str = "India"
     phone: Optional[str] = None
+    mobile: Optional[str] = None
+    whatsapp: Optional[str] = None
+    email: Optional[str] = None
     website_url: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    social_profiles: Optional[Dict[str, str]] = None
     raw_payload: Optional[Dict[str, Any]] = None
     is_eligible_for_crm: bool = True
     rejection_reason: Optional[str] = None
     source_code: str
     license_status: str = "permitted_storage"
     is_demo: bool = False
+    all_contacts: Optional[List[Dict[str, Any]]] = None
 
 
 class BaseDiscoveryProvider(ABC):

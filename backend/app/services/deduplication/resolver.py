@@ -7,8 +7,10 @@ from app.models import (
     Company,
     Branch,
     BusinessContact,
+    SocialProfile,
     DuplicateCandidate,
-    LeadSource
+    LeadSource,
+    SourcePermission
 )
 from app.services.deduplication.normalizer import DataNormalizer
 from app.services.deduplication.matcher import BranchDeduplicationMatcher, MatchResult
@@ -48,6 +50,27 @@ class DeduplicationResolver:
         )
 
         source = self.db.query(LeadSource).filter(LeadSource.code == lead.source_code).first()
+        if not source and lead.source_code == "overpass":
+            source = LeadSource(
+                code="overpass",
+                name="OpenStreetMap Overpass API",
+                description="Live business discovery powered by OpenStreetMap Overpass API under ODbL license.",
+                is_active=True,
+                requires_api_key=False
+            )
+            self.db.add(source)
+            self.db.flush()
+            perm = SourcePermission(
+                source_id=source.id,
+                license_name="Open Data Commons Open Database License (ODbL) 1.0",
+                permitted_storage=True,
+                permitted_export=True,
+                permitted_enrichment=True,
+                license_terms_url="https://www.openstreetmap.org/copyright",
+                notes="Permitted for CRM storage, website enrichment, and lead generation export with source attribution."
+            )
+            self.db.add(perm)
+            self.db.flush()
         source_id = source.id if source else None
 
         # 1. Exact Duplicate -> Update existing branch
@@ -63,6 +86,10 @@ class DeduplicationResolver:
                     branch.pincode = lead.pincode
                 if not branch.website_url and lead.website_url:
                     branch.website_url = lead.website_url
+                if not branch.latitude and lead.latitude:
+                    branch.latitude = lead.latitude
+                if not branch.longitude and lead.longitude:
+                    branch.longitude = lead.longitude
                 branch.last_checked_at = datetime.now(timezone.utc)
                 self.db.commit()
                 return branch, "updated"
@@ -97,6 +124,8 @@ class DeduplicationResolver:
             state=lead.state,
             pincode=lead.pincode,
             country="India",
+            latitude=lead.latitude,
+            longitude=lead.longitude,
             website_url=lead.website_url,
             source_id=source_id,
             source_reference=lead.external_id,
@@ -104,6 +133,7 @@ class DeduplicationResolver:
             confidence_score=lead.raw_payload.get("confidence", 1.0) if lead.raw_payload else 1.0,
             enrichment_status="pending" if lead.website_url else "completed",
             is_demo=lead.is_demo,
+            is_archived=False,
             is_active=True
         )
         self.db.add(new_branch)
@@ -123,6 +153,30 @@ class DeduplicationResolver:
                 source=lead.source_code
             )
             self.db.add(contact)
+
+        # Add initial email contact if available
+        if lead.email:
+            email_contact = BusinessContact(
+                branch_id=new_branch.id,
+                contact_type="email",
+                original_value=lead.email,
+                normalized_value=lead.email.strip().lower(),
+                is_primary=True,
+                is_verified=False,
+                source=lead.source_code
+            )
+            self.db.add(email_contact)
+
+        # Add social profiles if available
+        if lead.social_profiles:
+            for platform, url in lead.social_profiles.items():
+                sp = SocialProfile(
+                    branch_id=new_branch.id,
+                    platform=platform,
+                    profile_url=url,
+                    handle=url.rstrip("/").split("/")[-1] if "/" in url else None
+                )
+                self.db.add(sp)
 
         # 4. If uncertain match, create a DuplicateCandidate review entry
         if match.decision == MatchResult.UNCERTAIN_MATCH and match.existing_branch_id:
@@ -145,7 +199,8 @@ class DeduplicationResolver:
         candidate_id: str,
         resolution: str,
         user_id: Optional[str] = None,
-        notes: Optional[str] = None
+        notes: Optional[str] = None,
+        org_id: Optional[str] = None
     ) -> bool:
         """
         Manually resolves an uncertain duplicate match from the Duplicates Review dashboard.
@@ -154,6 +209,10 @@ class DeduplicationResolver:
         record = self.db.query(DuplicateCandidate).filter(DuplicateCandidate.id == candidate_id).first()
         if not record:
             return False
+
+        if org_id and record.existing_branch and record.existing_branch.company:
+            if record.existing_branch.company.organization_id != org_id:
+                return False
 
         record.resolved_by_user_id = user_id
         record.resolution_notes = notes

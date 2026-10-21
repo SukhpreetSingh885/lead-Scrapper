@@ -14,6 +14,8 @@ class DiscoveryJobCreate(BaseModel):
     must_have_website: bool = False
     must_have_whatsapp: bool = False
     exclude_already_saved: bool = False
+    radius_km: Optional[int] = Field(default=None, description="Search radius in kilometers", ge=1, le=50)
+    locations: Optional[List[str]] = Field(default=None, description="Optional list of Indian cities/areas for multi-location batch")
 
 
 class DiscoveryJobItemOut(BaseModel):
@@ -23,11 +25,26 @@ class DiscoveryJobItemOut(BaseModel):
     phone: Optional[str] = None
     website: Optional[str] = None
     is_eligible_for_crm: bool
+    is_saved: bool = False
+    is_already_saved: bool = False
     rejection_reason: Optional[str] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class CityDiscoveryStats(BaseModel):
+    city: str
+    state: str
+    latitude: float
+    longitude: float
+    radius_meters: int
+    raw_discovered: int
+    category_matched: int
+    duplicates_removed: int
+    unique_contributed: int
+    contact_qualified: int = 0
 
 
 class DiscoveryJobOut(BaseModel):
@@ -41,6 +58,13 @@ class DiscoveryJobOut(BaseModel):
     status: str  # pending, queued, running, completed, partially_completed, failed, cancelled
     total_discovered: int
     total_eligible: int
+    total_contact_qualified: int = 0
+    total_mobile: int = 0
+    total_landline: int = 0
+    total_whatsapp: int = 0
+    total_missing_phone: int = 0
+    total_enriched: int = 0
+    total_enrichment_unavailable: int = 0
     total_inserted: int
     total_updated: int
     total_duplicates_flagged: int
@@ -51,6 +75,7 @@ class DiscoveryJobOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     items: List[DiscoveryJobItemOut] = []
+    per_city_stats: Optional[List[CityDiscoveryStats]] = None
 
     class Config:
         from_attributes = True
@@ -70,4 +95,30 @@ class EnrichmentJobOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DiscoveryPreviewItemOut(BaseModel):
+    id: str
+    job_id: str
+    business_name: str
+    category: Optional[str] = None
+    mobile: Optional[str] = None
+    phone: Optional[str] = None
+    whatsapp: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    source: Optional[str] = None
+    has_contact_number: bool = False
+    is_already_saved: bool = False
+    is_saved: bool = False
+    branch_id: Optional[str] = None
+    is_eligible_for_crm: bool = True
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
 

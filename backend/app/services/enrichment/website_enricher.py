@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
 from app.models import Branch, BusinessContact, SocialProfile, EnrichmentJob
@@ -10,14 +10,84 @@ from app.services.enrichment.social_extractor import SocialProfileExtractor
 
 
 class WebsiteEnrichmentEngine:
-    def __init__(self, db: Session):
+    def __init__(self, db: Optional[Session] = None):
         self.db = db
         self.crawler = WebsiteCrawler()
+
+    async def enrich_preview_item(
+        self,
+        website_url: str,
+        business_name: str,
+        max_pages: int = 2,
+        timeout: float = 5.0
+    ) -> Dict[str, Any]:
+        """
+        Visits authorized official website of a discovered business during preview,
+        extracts valid phone/mobile/whatsapp numbers and emails with provenance evidence,
+        WITHOUT saving anything to the permanent CRM database.
+        """
+        if not website_url or not isinstance(website_url, str):
+            return {"success": False, "reason": "No website URL provided"}
+
+        clean_url = website_url.strip()
+        if not clean_url.startswith("http://") and not clean_url.startswith("https://"):
+            clean_url = f"https://{clean_url}"
+
+        try:
+            crawler = WebsiteCrawler(max_pages=max_pages, timeout=timeout)
+            pages = await crawler.crawl_site(clean_url)
+            if not pages:
+                return {"success": False, "reason": "No accessible pages or disallowed by robots.txt/SSRF"}
+
+            all_phones: List[Dict[str, Any]] = []
+            all_emails: List[Dict[str, str]] = []
+            all_socials: List[Dict[str, str]] = []
+
+            for page_url, html in pages.items():
+                phones = IndianPhoneExtractor.extract_from_text_and_html(html, source_url=page_url)
+                emails = EmailExtractor.extract_from_html(html, source_url=page_url)
+                socials = SocialProfileExtractor.extract_from_html(html)
+
+                all_phones.extend(phones)
+                all_emails.extend(emails)
+                all_socials.extend(socials)
+
+            # Deduplicate extracted contacts
+            unique_phones = {}
+            for p in all_phones:
+                key = (p.get("contact_type"), p.get("normalized_value"))
+                if key not in unique_phones:
+                    unique_phones[key] = p
+
+            unique_emails = {}
+            for e in all_emails:
+                norm = e.get("normalized_value")
+                if norm and norm not in unique_emails:
+                    unique_emails[norm] = e
+
+            unique_socials = {}
+            for s in all_socials:
+                norm = s.get("profile_url")
+                if norm and norm not in unique_socials:
+                    unique_socials[norm] = s
+
+            return {
+                "success": True,
+                "pages_crawled": len(pages),
+                "phones": list(unique_phones.values()),
+                "emails": list(unique_emails.values()),
+                "socials": list(unique_socials.values()),
+            }
+        except Exception as e:
+            return {"success": False, "reason": str(e)}
 
     async def enrich_branch(self, branch_id: str) -> Dict[str, Any]:
         """
         Visits authorized public website of the branch and extracts verified contact details.
         """
+        if not self.db:
+            return {"success": False, "error": "Database session required for enrich_branch"}
+
         branch = self.db.query(Branch).filter(Branch.id == branch_id).first()
         if not branch:
             return {"success": False, "error": "Branch not found"}
@@ -44,8 +114,8 @@ class WebsiteEnrichmentEngine:
             all_socials: List[Dict[str, str]] = []
 
             for page_url, html in pages.items():
-                phones = IndianPhoneExtractor.extract_from_text_and_html(html)
-                emails = EmailExtractor.extract_from_html(html)
+                phones = IndianPhoneExtractor.extract_from_text_and_html(html, source_url=page_url)
+                emails = EmailExtractor.extract_from_html(html, source_url=page_url)
                 socials = SocialProfileExtractor.extract_from_html(html)
 
                 all_phones.extend(phones)
@@ -80,7 +150,9 @@ class WebsiteEnrichmentEngine:
                         normalized_value=p["normalized_value"],
                         is_primary=(phones_added == 0 and not branch.contacts),
                         is_verified=True,
-                        source="website_enrichment"
+                        source="website_enrichment",
+                        source_url=p.get("source_url"),
+                        evidence=p.get("evidence")
                     )
                     self.db.add(contact)
                     phones_added += 1
@@ -99,7 +171,9 @@ class WebsiteEnrichmentEngine:
                         normalized_value=e["normalized_value"],
                         is_primary=(emails_added == 0),
                         is_verified=True,
-                        source="website_enrichment"
+                        source="website_enrichment",
+                        source_url=e.get("source_url"),
+                        evidence=e.get("evidence")
                     )
                     self.db.add(contact)
                     emails_added += 1

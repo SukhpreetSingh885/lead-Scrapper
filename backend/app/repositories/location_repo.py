@@ -89,6 +89,27 @@ class LocationRepository:
                     )]
                 )
 
+        # Check predefined Indian city coordinates
+        from app.services.discovery.overpass_provider import INDIAN_CITY_COORDINATES
+        clean_lower = clean_no_country.lower()
+        if clean_lower in INDIAN_CITY_COORDINATES:
+            lat, lon, st = INDIAN_CITY_COORDINATES[clean_lower]
+            return LocationValidationResult(
+                is_valid=True,
+                resolved_city=clean_lower.title(),
+                resolved_state=st,
+                resolved_district=clean_lower.title(),
+                candidates=[LocationSuggestion(
+                    id=None,
+                    city=clean_lower.title(),
+                    state=st,
+                    district=clean_lower.title(),
+                    locality=None,
+                    pincode=None,
+                    display_name=f"{clean_lower.title()}, {st}, India"
+                )]
+            )
+
         # Search matching records
         candidates = self.suggest_locations(clean_no_country, limit=5)
         if not candidates:
@@ -152,4 +173,67 @@ class LocationRepository:
             ambiguous=len(candidates) > 1,
             candidates=candidates
         )
+
+    def parse_and_validate_locations(
+        self,
+        raw_input: str,
+        locations_list: Optional[List[str]] = None
+    ) -> Tuple[bool, List[Tuple[str, str]], Optional[str]]:
+        """
+        Parses and validates one or multiple Indian locations.
+        Returns:
+            (is_valid, list_of_(resolved_city, resolved_state), error_message_or_None)
+        """
+        targets = []
+        if locations_list and len(locations_list) > 0:
+            targets = [loc.strip() for loc in locations_list if loc and loc.strip()]
+        else:
+            raw_str = raw_input.strip()
+            if "+" in raw_str:
+                parts = [p.strip() for p in raw_str.split("+") if p.strip()]
+            elif ";" in raw_str:
+                parts = [p.strip() for p in raw_str.split(";") if p.strip()]
+            elif "," in raw_str:
+                single_res = self.validate_indian_location(raw_str)
+                parts = [p.strip() for p in raw_str.split(",") if p.strip()]
+                if len(parts) > 1:
+                    all_parts_valid = True
+                    temp_resolved = []
+                    for p in parts:
+                        p_res = self.validate_indian_location(p)
+                        if p_res.is_valid and p_res.resolved_city:
+                            temp_resolved.append((p_res.resolved_city, p_res.resolved_state or "India"))
+                        else:
+                            all_parts_valid = False
+                            break
+                    if all_parts_valid:
+                        seen = set()
+                        deduped = []
+                        for c, s in temp_resolved:
+                            if c.lower() not in seen:
+                                seen.add(c.lower())
+                                deduped.append((c, s))
+                        return True, deduped, None
+
+                if single_res.is_valid:
+                    return True, [(single_res.resolved_city or raw_str.title(), single_res.resolved_state or "India")], None
+            else:
+                parts = [raw_str]
+
+            targets = parts
+
+        if not targets:
+            return False, [], "Location input cannot be empty."
+
+        resolved_list = []
+        seen = set()
+        for target in targets:
+            res = self.validate_indian_location(target)
+            if not res.is_valid or not res.resolved_city:
+                return False, [], f"'{target}' was not recognized as a valid location in India."
+            if res.resolved_city.lower() not in seen:
+                seen.add(res.resolved_city.lower())
+                resolved_list.append((res.resolved_city, res.resolved_state or "India"))
+
+        return True, resolved_list, None
 

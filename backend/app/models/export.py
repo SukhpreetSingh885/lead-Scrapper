@@ -11,6 +11,7 @@ class Export(Base, TimestampMixin):
     file_format = Column(String(10), nullable=False)  # csv, xlsx
     filter_criteria = Column(Text, nullable=True)  # JSON filters
     file_path = Column(String(500), nullable=True)
+    filename = Column(String(255), nullable=True)
     row_count = Column(Integer, default=0, nullable=False)
     file_size_bytes = Column(Integer, default=0, nullable=False)
     status = Column(String(50), default="pending", nullable=False)  # pending, processing, ready, failed

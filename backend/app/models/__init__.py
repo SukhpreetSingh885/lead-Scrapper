@@ -6,7 +6,7 @@ from app.models.contact import BusinessContact
 from app.models.social import SocialProfile
 from app.models.location import IndiaLocation
 from app.models.source import LeadSource, SourcePermission
-from app.models.job import DiscoveryJob, DiscoveryJobItem, EnrichmentJob
+from app.models.job import DiscoveryJob, DiscoveryJobItem, EnrichmentJob, discovery_job_leads
 from app.models.duplicate import DuplicateCandidate
 from app.models.export import Export
 from app.models.audit import AuditLog
@@ -27,6 +27,7 @@ __all__ = [
     "DiscoveryJob",
     "DiscoveryJobItem",
     "EnrichmentJob",
+    "discovery_job_leads",
     "DuplicateCandidate",
     "Export",
     "AuditLog",
