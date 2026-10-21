@@ -53,9 +53,22 @@ class JobRepository:
         return job
 
     def get_job_by_id(self, job_id: str) -> Optional[DiscoveryJob]:
-        return self.db.query(DiscoveryJob).options(
+        job = self.db.query(DiscoveryJob).options(
             joinedload(DiscoveryJob.items)
         ).filter(DiscoveryJob.id == job_id).first()
+        if job and job.status in ("running", "pending"):
+            from datetime import datetime, timezone, timedelta
+            ref_time = job.started_at or job.created_at
+            if ref_time:
+                if ref_time.tzinfo is None:
+                    ref_time = ref_time.replace(tzinfo=timezone.utc)
+                if datetime.now(timezone.utc) - ref_time > timedelta(minutes=10):
+                    job.status = "failed"
+                    job.error_message = "Discovery job timed out or was interrupted by a server restart."
+                    job.completed_at = datetime.now(timezone.utc)
+                    self.db.commit()
+                    self.db.refresh(job)
+        return job
 
     def list_jobs_paginated(
         self,
