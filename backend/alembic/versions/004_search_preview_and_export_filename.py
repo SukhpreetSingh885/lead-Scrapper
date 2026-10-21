@@ -25,8 +25,8 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column('city', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('state', sa.String(length=100), nullable=True))
         batch_op.add_column(sa.Column('source_code', sa.String(length=50), nullable=True))
-        batch_op.add_column(sa.Column('is_saved', sa.Boolean(), server_default='0', nullable=False))
-        batch_op.add_column(sa.Column('is_already_saved', sa.Boolean(), server_default='0', nullable=False))
+        batch_op.add_column(sa.Column('is_saved', sa.Boolean(), server_default=sa.text('false'), nullable=False))
+        batch_op.add_column(sa.Column('is_already_saved', sa.Boolean(), server_default=sa.text('false'), nullable=False))
         batch_op.add_column(sa.Column('expires_at', sa.DateTime(timezone=True), nullable=True))
 
     # 2. Add expires_at to discovery_jobs

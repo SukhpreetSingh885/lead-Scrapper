@@ -1,18 +1,31 @@
 from typing import Generator
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.pool import NullPool, QueuePool
 from app.core.config import settings
 
 # Engine setup
-connect_args = {}
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "echo": False,
+}
+
 if settings.is_sqlite:
-    connect_args = {"check_same_thread": False}
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    # PostgreSQL / Neon configuration
+    # If using Neon PgBouncer pooled connection (-pooler), use NullPool
+    if "-pooler" in settings.DATABASE_URL:
+        engine_kwargs["poolclass"] = NullPool
+    else:
+        engine_kwargs["poolclass"] = QueuePool
+        engine_kwargs["pool_size"] = 10
+        engine_kwargs["max_overflow"] = 20
+        engine_kwargs["pool_recycle"] = 300
 
 engine = create_engine(
     settings.DATABASE_URL,
-    connect_args=connect_args,
-    pool_pre_ping=True,
-    echo=False,
+    **engine_kwargs
 )
 
 # Enable SQLite foreign keys if SQLite
@@ -34,4 +47,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-

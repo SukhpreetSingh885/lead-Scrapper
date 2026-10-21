@@ -18,15 +18,15 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # Add columns to branches
     with op.batch_alter_table('branches', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('is_archived', sa.Boolean(), nullable=False, server_default='0'))
+        batch_op.add_column(sa.Column('is_archived', sa.Boolean(), nullable=False, server_default=sa.text('false')))
         batch_op.add_column(sa.Column('archive_reason', sa.String(length=255), nullable=True))
         batch_op.create_index('ix_branches_is_archived', ['is_archived'])
 
-    # Update demo branches
+    # Update demo branches with standard boolean literals compatible with both SQLite and PostgreSQL
     op.execute(
-        "UPDATE branches SET is_archived = 1, is_demo = 1, is_active = 0, "
+        "UPDATE branches SET is_archived = true, is_demo = true, is_active = false, "
         "archive_reason = 'Quarantined legacy demo fixture' "
-        "WHERE is_demo = 1 OR source_reference LIKE 'DEMO-%'"
+        "WHERE is_demo = true OR source_reference LIKE 'DEMO-%'"
     )
 
 

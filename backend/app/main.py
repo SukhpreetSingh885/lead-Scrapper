@@ -17,12 +17,15 @@ logger = logging.getLogger("india_leads_platform")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.PROJECT_NAME} in {settings.ENVIRONMENT} mode...")
-    # Initialize database tables on startup
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables initialized successfully.")
-    except Exception as e:
-        logger.error(f"Database table initialization error: {e}")
+    # Initialize database tables on startup (only for local zero-dependency SQLite)
+    if settings.is_sqlite:
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("SQLite database tables verified successfully.")
+        except Exception as e:
+            logger.error(f"Database table initialization error: {e}")
+    else:
+        logger.info("PostgreSQL database detected. Schema lifecycle managed via verified Alembic migrations.")
 
     # Bootstrap initial admin ONLY if no admin exists in the database
     try:

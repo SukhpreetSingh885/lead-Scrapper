@@ -16,6 +16,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Ensure alembic_version column can hold longer revision IDs on PostgreSQL
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.execute("ALTER TABLE alembic_version ALTER COLUMN version_num TYPE VARCHAR(128);")
+
     # organizations
     op.create_table(
         'organizations',

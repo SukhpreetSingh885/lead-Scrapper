@@ -67,7 +67,13 @@ class Settings(BaseSettings):
 
     @field_validator("DATABASE_URL", mode="before")
     def assemble_database_url(cls, v: str) -> str:
-        if v and v.startswith("sqlite:///."):
+        if not v:
+            return v
+        v = v.strip()
+        # Handle Render/Neon legacy postgres:// prefix
+        if v.startswith("postgres://"):
+            v = "postgresql://" + v[len("postgres://"):]
+        if v.startswith("sqlite:///."):
             from pathlib import Path
             root = Path(__file__).resolve().parents[3]
             filename = v.replace("sqlite:///./", "").replace("sqlite:///", "")
